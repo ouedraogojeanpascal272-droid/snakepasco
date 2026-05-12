@@ -3,6 +3,7 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const scoreSpan = document.getElementById('score');
 const restartBtn = document.getElementById('restart');
+const pauseBtn = document.getElementById('pauseBtn');
 const speedRange = document.getElementById('speedRange');
 const speedValue = document.getElementById('speedValue');
 
@@ -19,6 +20,7 @@ let score = 0;
 let gameRunning = false;
 let gameLoop = null;
 let gameSpeed = 100; // ms (par défaut)
+let paused = false;   // état de pause
 
 // ===================== CANVAS RESPONSIVE =====================
 function resizeCanvas() {
@@ -26,8 +28,10 @@ function resizeCanvas() {
     canvas.width = size;
     canvas.height = size;
     gridSize = canvas.width / tileCount;
-    if (gameRunning) {
+    if (gameRunning && !paused) {
         drawGame();
+    } else if (paused) {
+        drawPauseOverlay();
     } else {
         ctx.fillStyle = '#34495e';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -40,7 +44,7 @@ resizeCanvas();
 speedRange.addEventListener('input', () => {
     gameSpeed = parseInt(speedRange.value);
     speedValue.textContent = gameSpeed;
-    if (gameRunning) {
+    if (gameRunning && !paused) {
         clearInterval(gameLoop);
         gameLoop = setInterval(gameStep, gameSpeed);
     }
@@ -83,6 +87,17 @@ function drawGame() {
     ctx.fill();
 }
 
+function drawPauseOverlay() {
+    ctx.fillStyle = 'rgba(0,0,0,0.7)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#f39c12';
+    ctx.font = `${canvas.width / 10}px Arial`;
+    ctx.textAlign = 'center';
+    ctx.fillText('PAUSE', canvas.width / 2, canvas.height / 2);
+    ctx.font = `${canvas.width / 20}px Arial`;
+    ctx.fillText('Appuyez sur ▶️ pour reprendre', canvas.width / 2, canvas.height / 2 + 40);
+}
+
 function moveSnake() {
     const head = { x: snake[0].x + direction.x, y: snake[0].y + direction.y };
     // Collision avec les murs
@@ -113,6 +128,8 @@ function gameStep() {
 }
 
 function startGame() {
+    paused = false;
+    pauseBtn.textContent = '⏸️ Pause';
     snake = [{ x: 10, y: 10 }];
     direction = { x: 1, y: 0 };
     score = 0;
@@ -125,6 +142,8 @@ function startGame() {
 }
 
 function gameOver() {
+    paused = false;
+    pauseBtn.textContent = '⏸️ Pause';
     gameRunning = false;
     clearInterval(gameLoop);
     drawGame();
@@ -138,6 +157,27 @@ function gameOver() {
     ctx.fillText('Appuyez sur "Nouvelle partie"', canvas.width / 2, canvas.height / 2 + 40);
 }
 
+// ===================== PAUSE =====================
+function togglePause() {
+    if (!gameRunning) return;
+
+    if (paused) {
+        // Reprendre
+        paused = false;
+        pauseBtn.textContent = '⏸️ Pause';
+        drawGame();
+        gameLoop = setInterval(gameStep, gameSpeed);
+    } else {
+        // Mettre en pause
+        paused = true;
+        pauseBtn.textContent = '▶️ Reprendre';
+        clearInterval(gameLoop);
+        drawPauseOverlay();
+    }
+}
+
+pauseBtn.addEventListener('click', togglePause);
+
 // ===================== CONTRÔLES =====================
 function setDirection(dx, dy) {
     // Empêche le demi-tour
@@ -147,7 +187,7 @@ function setDirection(dx, dy) {
 
 // Clavier
 window.addEventListener('keydown', (e) => {
-    if (!gameRunning) return;
+    if (!gameRunning || paused) return;
     const key = e.key;
     if (key === 'ArrowUp') setDirection(0, -1);
     else if (key === 'ArrowDown') setDirection(0, 1);
@@ -161,22 +201,22 @@ window.addEventListener('keydown', (e) => {
 // Boutons tactiles
 document.getElementById('btnUp').addEventListener('pointerdown', (e) => {
     e.preventDefault();
-    if (gameRunning) setDirection(0, -1);
+    if (gameRunning && !paused) setDirection(0, -1);
 });
 document.getElementById('btnDown').addEventListener('pointerdown', (e) => {
     e.preventDefault();
-    if (gameRunning) setDirection(0, 1);
+    if (gameRunning && !paused) setDirection(0, 1);
 });
 document.getElementById('btnLeft').addEventListener('pointerdown', (e) => {
     e.preventDefault();
-    if (gameRunning) setDirection(-1, 0);
+    if (gameRunning && !paused) setDirection(-1, 0);
 });
 document.getElementById('btnRight').addEventListener('pointerdown', (e) => {
     e.preventDefault();
-    if (gameRunning) setDirection(1, 0);
+    if (gameRunning && !paused) setDirection(1, 0);
 });
 
-// Nouvelle partie
+// Nouvelle partie (redémarrage)
 restartBtn.addEventListener('click', startGame);
 
 // Démarrer
