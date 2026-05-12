@@ -113,6 +113,37 @@ canvas {
     color: #bdc3c7;
     font-size: 0.9rem;
 }
+
+/* Styles pour le bouton pause et son conteneur */
+.pause-restart {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+#pauseBtn {
+    background: #f39c12;
+    border: none;
+    padding: 0.7rem 1.8rem;
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #2c3e50;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: transform 0.1s, background 0.2s;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+#pauseBtn:hover {
+    background: #e67e22;
+    transform: scale(1.05);
+}
+#pauseBtn:active {
+    transform: scale(0.98);
+}
+
 @media (max-width: 600px) {
     .ctrl-btn {
         width: 65px;
