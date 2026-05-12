@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Snake Game </title>
+    <title>Snake Game</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -25,7 +25,10 @@
                 <label for="speedRange">Vitesse : <span id="speedValue">100</span>ms</label>
                 <input type="range" id="speedRange" min="40" max="200" value="100" step="10">
             </div>
-            <button id="restart">🔄 Nouvelle partie</button>
+            <div class="pause-restart">
+                <button id="pauseBtn">⏸️ Pause</button>
+                <button id="restart">🔄 Nouvelle partie</button>
+            </div>
         </div>
         <p class="instructions">Utilisez les flèches du clavier ou les boutons ci-dessus.</p>
     </div>
