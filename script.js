@@ -10,7 +10,6 @@ const speedValue = document.getElementById('speedValue');
 // Paramètres fixes
 const tileCount = 20;
 let gridSize;
-const MAX_CANVAS_SIZE = 265;
 
 // Variables du jeu
 let snake = [{ x: 10, y: 10 }];
@@ -20,14 +19,23 @@ let score = 0;
 let gameRunning = false;
 let gameLoop = null;
 let gameSpeed = 100; // ms (par défaut)
-let paused = false;   // état de pause
+let paused = false;
 
 // ===================== CANVAS RESPONSIVE =====================
 function resizeCanvas() {
-    const size = Math.min(window.innerWidth * 0.9, window.innerHeight * 0.6, MAX_CANVAS_SIZE);
+    // Utiliser 85% de la largeur et 45% de la hauteur de l'écran, sans limite brutale
+    const maxWidth = window.innerWidth * 0.9;
+    const maxHeight = window.innerHeight * 0.45;   // Laisse assez de place pour les contrôles
+    const size = Math.min(maxWidth, maxHeight);
+
+    // Appliquer la même taille en pixels (dessin) et en affichage (CSS)
     canvas.width = size;
     canvas.height = size;
-    gridSize = canvas.width / tileCount;
+    canvas.style.width = size + 'px';
+    canvas.style.height = size + 'px';
+
+    gridSize = size / tileCount;
+
     if (gameRunning && !paused) {
         drawGame();
     } else if (paused) {
@@ -37,7 +45,9 @@ function resizeCanvas() {
         ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
 }
+
 window.addEventListener('resize', resizeCanvas);
+window.addEventListener('orientationchange', () => setTimeout(resizeCanvas, 50));
 resizeCanvas();
 
 // ===================== VITESSE =====================
@@ -50,7 +60,7 @@ speedRange.addEventListener('input', () => {
     }
 });
 
-// ===================== JEU =====================
+// ===================== JEU (inchangé) =====================
 function randomFood() {
     while (true) {
         const x = Math.floor(Math.random() * tileCount);
@@ -100,11 +110,9 @@ function drawPauseOverlay() {
 
 function moveSnake() {
     const head = { x: snake[0].x + direction.x, y: snake[0].y + direction.y };
-    // Collision avec les murs
     if (head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount) {
         return false;
     }
-    // Collision avec soi-même
     if (snake.some(segment => segment.x === head.x && segment.y === head.y)) {
         return false;
     }
@@ -160,27 +168,22 @@ function gameOver() {
 // ===================== PAUSE =====================
 function togglePause() {
     if (!gameRunning) return;
-
     if (paused) {
-        // Reprendre
         paused = false;
         pauseBtn.textContent = '⏸️ Pause';
         drawGame();
         gameLoop = setInterval(gameStep, gameSpeed);
     } else {
-        // Mettre en pause
         paused = true;
         pauseBtn.textContent = '▶️ Reprendre';
         clearInterval(gameLoop);
         drawPauseOverlay();
     }
 }
-
 pauseBtn.addEventListener('click', togglePause);
 
 // ===================== CONTRÔLES =====================
 function setDirection(dx, dy) {
-    // Empêche le demi-tour
     if (direction.x === -dx && direction.y === -dy) return;
     direction = { x: dx, y: dy };
 }
@@ -216,8 +219,5 @@ document.getElementById('btnRight').addEventListener('pointerdown', (e) => {
     if (gameRunning && !paused) setDirection(1, 0);
 });
 
-// Nouvelle partie (redémarrage)
 restartBtn.addEventListener('click', startGame);
-
-// Démarrer
 startGame();
